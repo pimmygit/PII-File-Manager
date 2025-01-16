@@ -1,0 +1,456 @@
+<?php
+/* 
+* @package:		Scan Manager
+* @subpackage:	Main
+* @author:		Kliment Stefanov <stefanov@uk.ibm.com>
+*/
+require_once('../config/constants.php');
+require_once('../config/settings.php');
+require_once('../utils/logger.php');
+require_once('../utils/functions.php');
+require_once('../utils/fileHandler.php');
+require_once('../utils/FTP.class.php');
+require_once('../utils/FMTZipArchive.class.php');
+
+// Start the session
+session_start();
+
+global $errMessage;
+
+// Get the name of the current working project
+$currProject = getCurrProj($_SESSION['userMail']);
+
+if (isset($_POST['btnAction']) && !empty($_POST['btnAction'])) {
+	
+	switch ($_POST['btnAction']) {
+		
+		case 'Download' :
+			
+			if (isset($_POST['selectedScan'])) {
+				
+				foreach ($_POST['selectedScan'] as $scan) {
+					
+					// I. CREATE A ZIP ARCHIVE
+					//------------------------------------------------------------
+					// Generate the absolute path of the scan root location to be deleted
+					//>>---------------------------------------------------------
+					// 1. Add the project name to the PII F.M.T. repository root
+					$scanLocation = PII_ROOT . "/" . str_replace(" ", "", $currProject);
+					// 2. Add the name of the scan to the path
+					$scanLocation = $scanLocation . "/" . str_replace(" ", "", $scan);
+					//<<---------------------------------------------------------
+					
+					$zipArchive = new FMTZipArchive();
+					$dstArchive = "/var/piifmt/tmp/".str_replace(" ", "", $scan).".zip";
+					
+					if ($zipArchive->open($dstArchive, ZIPARCHIVE::CREATE)!==TRUE) {
+					    msg_log(WARN, "Failed to create ZIP archive [".$dstArchive."].", NOTIFY);
+					}
+					
+					msg_log(DEBUG, "Compressing directory [".$scanLocation."] to [".$dstArchive."].", SILENT);
+					
+					$zipArchive->addDir($scanLocation, '/');
+					$zipArchive->close();
+					
+					// II. DOWNLOAD THE ZIP ARCHIVE
+					header("Pragma: public");
+					header("Expires: 0");
+					header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
+					header("Cache-Control: private", false);
+					header("Content-Type: application/zip");
+					header("Content-Disposition: attachment; filename=\"".basename($dstArchive)."\";");
+					header("Content-Transfer-Encoding: binary");
+					header("Content-Length: ".@filesize($dstArchive));
+					set_time_limit(0);
+					//@readfile("$filename") or die("File not found.");
+					
+					readfile_chunked($dstArchive);
+					
+					// III. Remove the temp file
+					rm_rf($dstArchive);
+				}
+			}
+			break;
+			
+		case 'Send to FTP' :
+			
+				if (isset($_POST['selectedScan'])) {
+				
+				foreach ($_POST['selectedScan'] as $scan) {
+					
+					// I. CREATE A ZIP ARCHIVE
+					//------------------------------------------------------------
+					// Generate the absolute path of the scan root location to be deleted
+					//>>---------------------------------------------------------
+					// 1. Add the project name to the PII F.M.T. repository root
+					$scanLocation = PII_ROOT . "/" . str_replace(" ", "", $currProject);
+					// 2. Add the name of the scan to the path
+					$scanLocation = $scanLocation . "/" . str_replace(" ", "", $scan);
+					//<<---------------------------------------------------------
+					
+					$zipArchive = new FMTZipArchive();
+					$dstArchive = "/var/piifmt/tmp/".str_replace(" ", "", $scan).".zip";
+					
+					if ($zipArchive->open($dstArchive, ZIPARCHIVE::CREATE)!==TRUE) {
+					    msg_log(WARN, "Failed to create ZIP archive [".$dstArchive."].", NOTIFY);
+					}
+					
+					msg_log(DEBUG, "Compressing directory [".$scanLocation."] to [".$dstArchive."].", SILENT);
+					
+					$zipArchive->addDir($scanLocation, '/');
+					$zipArchive->close();
+					
+					// II. UPLOAD THE ZIP ARCHIVE TO FTP SERVER
+					//------------------------------------------------------------
+					// Get FTP server details
+					$ftpServer = getFtpServer($currProject);
+					// Create FTP connection to the server
+					$ftpConn = new FTP($ftpServer[0], 21);
+					// Authenticate the user
+					if ($ftpConn && $ftpConn->login($ftpServer[1], $ftpServer[2])) {
+						// Upload the file tho the destination location
+						$ftpConn->ftpPut($dstArchive, str_replace(" ", "", $currProject), true);
+					}
+					
+					// III. Remove the temp file
+					rm_rf($dstArchive);
+				}
+			}			
+			break;
+			
+		case 'Delete Scan' :
+			
+			if (isset($_POST['selectedScan'])) {
+				
+				foreach ($_POST['selectedScan'] as $scan) {
+					
+					// First remove the scan properties from the DB
+					if ( !delPIIScan( $currProject, $scan ) ) {
+						
+						msg_log(WARN, "Failed to remove scan [".$scan."] for project [".$currProject."] from the database.", NOTIFY);
+					
+					} else {
+						// Generate the absolute path of the scan root location to be deleted
+						//>>---------------------------------------------------------
+						// 1. Add the project name to the PII F.M.T. repository root
+						$scanRoot = PII_ROOT . "/" . str_replace(" ", "", $currProject);
+						// 2. Add the name of the scan to the path
+						$scanRoot = $scanRoot . "/" . str_replace(" ", "", $scan);
+						//<<---------------------------------------------------------
+						
+						// Delete all files for this scan from the repository
+						msg_log(DEBUG, "Removing scan [".$scan."] from the PII F.M.T. repository.", SILENT);
+						
+						if ( !rm_rf($scanRoot) ) {
+							msg_log(WARN, "Failed to remove files for scan [".$scan."] from [".$scanRoot."].", NOTIFY);
+						}
+					}
+				}
+			}
+			
+			break;
+		
+		default :
+			break;
+	}
+}
+?>
+<html>
+<head>
+	<title>Scan Explorer - PII F.M.T.</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+	<link rel="stylesheet" type="text/css" href="main.css" />
+	<script type="text/javascript" src="javascript/scanExp.js"></script>
+	<script type="text/javascript" src="javascript/xmlHttpRequest.js"></script>
+</head>
+
+<body>
+
+<div class="header">
+	<div class="topBar" style="width: 50px;">
+		<form method="post" action="index.php" name="logOut">
+			<input type="submit" class="fmtButtonLink" name="logOut" value="Log Out" />
+		</form>
+	</div>
+	<div class="topBar" style="width: 150px;">User: <?php echo $_SESSION['userName']; ?> </div>
+</div>
+
+<div class="sideBar">
+	<div class="sideBarTitle" style="margin-top:0;">F.M.T. Pages</div>
+	<ul class="buttons">
+		<li><a href="piifmt.php">PII F.M.T. Home</a></li>
+		<li><a href="piiScanner.php">Source Scanner</a></li>
+		<li><a href="scanExp.php">Scan Explorer</a></li>
+		<li><a href="preferences.php">Preferences</a></li>
+		<li><a href="help.php">Help</a></li>
+	</ul>
+	<div class="sideBarTitle">Admin Pages</div>
+	<ul class="buttons">
+		<li><a href="projectExp.php">Project Explorer</a></li>
+		<?php
+		if (in_array($_SESSION['userMail'], $FMT_ADMIN_LIST)) {
+			echo '		<li><a href="langAndRules.php">Languages &amp; Rules</a></li>'.PHP_EOL;
+		}
+		?>
+	</ul>
+</div>
+
+<form method="post" id="scPanel" name="scPanel" action="scanExp.php">
+
+<div class="containerTop" style="height:40px; margin:0; background-color:#EEEEEE;">
+	
+	<input class="fmtButton" style="width:100px; margin:10px;" type="submit" name="btnAction" value="Download" onclick="return checkSelected();" />
+	
+	<input class="fmtButton" style="width:100px; margin:10px;" type="submit" name="btnAction" value="Send to FTP" onclick="return checkSelected();" />
+	
+	<input class="fmtButton" style="width:100px; margin:10px;" type="submit" name="btnAction" value="Delete Scan" onclick="return delPIIScans();" />
+	
+</div>
+
+<div class="containerTop" style="margin-top:10px; top:120px; height:20px; background-color:#DCDCDC;">
+	<div class="tableTitle" style="float:left; border: 0px solid #CCCCCC; width:25px;"><input type="checkbox" name="checkAll" value="Check All" onclick="selectAll(this);" /></div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:320px;">Scan Name</div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:50px;">Files</div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:70px;">Size kb.</div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:150px;">Date</div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:70px;">Type</div>
+	<div class="tableTitle" style="float:left; border-left: 1px solid #CCCCCC; width:100px;">Status</div>
+</div>
+
+<div class="containerExtend" style="top:150px; border-top: 1px solid #CCCCCC;">
+<table class="fmtTable" id="piiScansTable" style="width: 785px;" border="0" cellspacing="0" cellpadding="0">
+<?php
+	$totalScans = 0;
+	
+	$scanList = getPIIScanList( $currProject );
+	
+	if (is_array($scanList) ) {
+		foreach ( $scanList as $scanName ) {
+			
+			// Get scan information from the database
+			$scanInfo = getPIIScan($currProject, $scanName);
+			// If the user did search for all files or only for the new/modified ones
+			$scanType = $scanInfo['translated'] ? 'New' : 'All';
+			
+			echo '<tr class="highlighted">'.PHP_EOL;
+			echo '	<td class="checkbox"><input type="checkbox" name="selectedScan[]" value="'.$scanName.'"/></td>'.PHP_EOL;
+			echo '	<td style="width:315px; padding-left:5px;" onclick="openScan(\''.$scanName.'\')">'.$scanName.'</td>'.PHP_EOL;
+			echo '	<td style="width:45px; padding-left:5px;" onclick="openScan(\''.$scanName.'\')">'.$scanInfo['totalFiles'].'</td>'.PHP_EOL;
+			echo '	<td style="width:65px; padding-left:5px;" onclick="openScan(\''.$scanName.'\')">'.round($scanInfo['totalSize'] / 1024).'</td>'.PHP_EOL;
+			echo '	<td style="width:140px; padding-left:10px;" onclick="openScan(\''.$scanName.'\')">'.substr($scanInfo['scanDate'], 0, -3).'</td>'.PHP_EOL;
+			echo '	<td style="width:60px; padding-left:10px;" onclick="openScan(\''.$scanName.'\')">'. $scanType .'</td>'.PHP_EOL;
+			echo '	<td style="width:85px; padding-left:5px;" onclick="openScan(\''.$scanName.'\')">'.$scanInfo['state'].'</td>'.PHP_EOL;
+			echo '</tr>';
+			
+			$totalScans++;
+		}
+	}
+?>
+</table>
+</div>
+
+<div class="containerBottom" style="height:25; background-color:#EEEEEE">
+
+	<div style="float:left; margin:5px 5px 5px 15px; padding:0; width:70px; height:20px;">Total Scans:</div>
+	<div style="float:left; margin:5px 0; padding:0; width:40px; height:20px; font-weight:normal;"><?php echo $totalScans; ?></div>
+
+	<div style="float:left; margin:5px 5px 5px 15px; padding:0; width:60px; height:20px;">Location:</div>
+	<div style="float:left; margin:5px 0; padding:0; width:140px; height:20px; font-weight:normal;"><?php echo getLocationCC($currProject); ?></div>
+
+</div>
+
+</form>
+
+<?php // Routine to display error messages set in logger.php
+if ( !empty($errMessage) ) {
+	echo '<script type="text/javascript">popMessage("'.$errMessage.'", "warn");</script>';
+}
+?>
+
+<form method="post" id="fmPanel" name="fmPanel" action="piiScanner.php">
+	<input type="hidden" id="scanValue" name="scanValue" value="" />
+</form>
+
+</body>
+</html>
+
+
+
+Rubbish at the end
+
+ onload="initFields('<?php echo $_SESSION['userMail']; ?>');"
+
+/*
+* Name: initFields
+* Desc: Field initialization.
+* Inpt:	none
+* Outp: none
+* Date: 27.11.2007
+*/
+function initFields(userMail) {
+	document.getElementById('ccUser').value = '';
+	document.getElementById('ccPass').value = '';
+	
+	dbGetAuthCC(userMail);
+}
+
+/*
+* Name: popuateAuthCC
+* Desc: Field initialization.
+* Inpt:	ccView	->	Type: String, Value: Name of ClearCase view
+*		ccUser	->	Type: String, Value: Username to access ClearCase
+*		ccPass	->	Type: String, Value: Password to access ClearCase
+* Outp: none
+* Date: 27.11.2007
+*/
+function popuateAuthCC(ccView, ccUser, ccPass) {
+	
+	document.getElementById('ccView').value = ccView;
+	document.getElementById('ccUser').value = ccUser;
+	document.getElementById('ccPass').value = 'secret';
+}
+
+
+/*
+* Name: dbGetAuthCC
+* Desc: Prepares the XML HTTP request for fetching the ClearCase credentials.
+* Inpt:	none
+* Outp: none
+* Date: 27.11.2007
+*/
+function dbGetAuthCC(userMail) {
+	
+	var url =	'../utils/httpRequests.php';
+	var act =	'getAuthCC';
+	var par =	'&mail=' + userMail;
+	
+	var csvList = syncXmlHttpRequest(url, act, par);
+	
+	if (csvList != "empty") {
+		
+		var tokenArray = csvList.split(',');
+		
+		popuateAuthCC(tokenArray[0], tokenArray[1], tokenArray[2] );
+	}
+}
+
+/*
+* Name: dbSaveCC
+* Desc: Field initialization.
+* Inpt:	none
+* Outp: none
+* Date: 27.11.2007
+*/
+function dbSaveCC(userMail) {
+	// Saving the CC credentials should generate passphrase-lees authentication key
+	popMessage('Generating authentication key. Please wait a few moments..', 'wait'); 
+	
+	var newViewCC = document.getElementById('ccView').value;
+	var newUserCC = document.getElementById('ccUser').value;
+	var newPassCC = document.getElementById('ccPass').value;
+	
+	var url =	'../utils/httpRequests.php';
+	var act =	'setAuthCC';
+	var par =	'&view=' + newViewCC + 
+				'&mail=' + userMail + 
+				'&ccUser=' + newUserCC;
+
+//	if ( newPassCC != 'secret' ) {
+//		
+//		passConfirm = prompt('Confirm password');
+//		
+//		if (passConfirm) {
+//		
+//			if ( passConfirm == newPassCC ) {
+//				par = par + '&ccPass=' + newPassCC;
+//			} else {
+//				par = par + '&ccPass=secret'; // Setting the password to 'secret' will avoid modifying it.
+//				alert('Password not updated: Match failed.');
+//			}
+//		}
+//	} else {
+//		par = par + '&ccPass=secret';
+//	}
+	if ( newPassCC != 'secret' ) {
+		par = par + '&ccPass=' + newPassCC;
+	} else {
+		par = par + '&ccPass=secret'; // Setting the password to 'secret' will avoid modifying it.
+	}
+	
+	// Read PII F.M.T. error codes
+	var err = syncXmlHttpRequest(url, act, par);
+	
+	if ( err == -1 ) {
+		resetMessage();
+		popMessage("Failed to save preferences. Please notify the administrator about this error.", "alert");
+	} else if ( err == -5 ) {
+		resetMessage();
+		popMessage("Error generating authentication key.", "alert");
+	} else {
+		resetMessage();
+	}
+}
+
+/*
+* Name: dbGetProjects
+* Desc: Prepares the XML HTTP request for fetching the current working project.
+* Inpt:	Type: String, Value: E-mail of the user
+* Outp: none
+* Date: 11.01.2008
+*/
+function dbGetProjects(userMail) {
+	
+	var url =	'../utils/httpRequests.php';
+	var act =	'getProjectsForUser';
+	var par =	'&mail=' + userMail;
+	
+	var currProj = dbGetCurrProj(userMail);
+	var projList = syncXmlHttpRequest(url, act, par);
+	
+	if (projList != "empty") {
+		popuateProjects(userMail, projList, currProj);
+	}
+}
+
+
+/*
+* Name: popuateProject
+* Desc: Populate list wih projects.
+* Inpt:	none
+* Outp: none
+* Date: 11.01.2008
+*/
+function popuateProjects(userMail, projList, currProj) {
+
+	// Get the drop-down list we want to modify
+	var dropProjList = document.getElementById('projSelector');
+	// Clear list from old data
+	dropProjList.options.length = 0;
+	// Populate with new data
+	var tokenArray = projList.split(',');
+	var j = 0;
+	for (var i=0; i<tokenArray.length; i=i+8) {
+		dropProjList.options[j] = new Option(tokenArray[i], tokenArray[i]);
+		dropProjList.options[j].setAttribute('onClick', 'dbLogAction("selectProject"); dbSetCurrProj("' + userMail + '", "' + tokenArray[i] + '")');
+		if ( currProj == tokenArray[i] ) {
+			dropProjList.options[j].selected = true;
+		}
+		j++;
+	}
+}
+
+/*
+* Name: dbGetCurrProj
+* Desc: Prepares the XML HTTP request for fetching the current working project.
+* Inpt:	Type: String, Value: E-mail of the user
+* Outp: none
+* Date: 11.01.2008
+*/
+function dbGetCurrProj(userMail) {
+	
+	var url =	'../utils/httpRequests.php';
+	var act =	'getCurrProj';
+	var par =	'&mail=' + userMail;
+	
+	return syncXmlHttpRequest(url, act, par);
+}

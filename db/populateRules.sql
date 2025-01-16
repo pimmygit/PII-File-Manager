@@ -1,0 +1,15 @@
+INSERT INTO renaming_rules VALUES ('WUQ 1.0', '.class', '_LANG_.class');
+INSERT INTO renaming_rules VALUES ('WUQ 1.0', '.props', '_LANG_.props');
+INSERT INTO renaming_rules VALUES ('WUQ 1.0', '.properties', '_LANG_.properties');
+INSERT INTO renaming_rules VALUES ('Webtop 3.5', '.class', '_LANG_.class');
+INSERT INTO renaming_rules VALUES ('Webtop 3.5', '.props', '_LANG_.props');
+INSERT INTO renaming_rules VALUES ('Webtop 3.5', '.properties', '_LANG_.properties');
+INSERT INTO renaming_rules VALUES ('OMNIbus 8.1', '.class', '_LANG_.class');
+INSERT INTO renaming_rules VALUES ('OMNIbus 8.1', '.props', '_LANG_.props');
+INSERT INTO renaming_rules VALUES ('OMNIbus 8.1', '.properties', '_LANG_.properties');
+INSERT INTO renaming_rules VALUES ('Precision 2.3', '.class', '_LANG_.class');
+INSERT INTO renaming_rules VALUES ('Precision 2.3', '.props', '_LANG_.props');
+INSERT INTO renaming_rules VALUES ('Precision 2.3', '.properties', '_LANG_.properties');
+INSERT INTO renaming_rules VALUES ('Some project version 3.9', '.class', '_LANG_.class');
+INSERT INTO renaming_rules VALUES ('Some project version 3.9', '.props', '_LANG_.props');
+INSERT INTO renaming_rules VALUES ('Some project version 3.9', '.properties', '_LANG_.properties');

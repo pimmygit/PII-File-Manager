@@ -1,0 +1,496 @@
+.header {
+position: relative;
+height: 40px;
+clear: top;
+float: top;
+text-align: center;
+font-family: Verdana;
+font-weight: bold;
+font-size: 36px;
+color: #22316C;
+background-color: white;
+padding-bottom: 15px;
+border-bottom: 1px solid #dadada;
+background: url(images/ibmPIIFMTLogo.png) no-repeat center top;
+}
+
+.topBar {
+float: right;
+width: 300px;
+height: 15px;
+margin: 30px 10px 0 0;
+padding: 5px;
+text-align: left;
+font-weight: normal;
+font-size: 12px;
+border: 0px solid #dadada;
+}
+
+.titlePanel {
+position: relative;
+height: 15px;
+clear: top;
+float: top;
+text-align: left;
+font-family: Verdana;
+font-weight: bold;
+font-size: 18px;
+color: #22316C;
+padding-bottom: 10px;
+border-bottom: 1px solid #dadada;
+}
+
+.subPanel {
+height: 40px;
+margin-top: 1em;
+float: left;
+}
+
+.sideBar{
+background-color: white;
+clear: left;
+float: left;
+width: 150px;
+margin-right: 5px;
+margin-top: 1em;
+}
+
+.buttons {
+list-style-type: none;
+margin: 0;
+margin-bottom: 8px;
+padding: 0;
+}
+
+.sideBarTitle {
+color: #22316C;
+display: block;
+cursor: default;
+margin-top: 40px;
+padding: 2px 0 2px 19px;
+font-size: 100%;
+font-weight: bold;
+background-color: #DCDCDC;
+border-bottom: 1px solid #AAAAAA;
+}
+
+.buttons li {
+height: 24px;
+padding: 0;
+margin: 0;
+}
+
+.buttons li:hover {
+background-color: #C3E4ED;
+}
+
+.buttons li a {
+display: block;
+height: 20px;
+margin: 0;
+padding: 4px 0 0 18px;
+color: #22316C;
+font-size: 90%;
+font-weight: bold;
+text-decoration: none;
+border-bottom: 1px solid #dadada;
+}
+
+.buttons a:hover {
+color: #000033;
+}
+
+tr.highlighted {
+height: 10px;
+margin-top: 5px;
+margin-bottom: 5px;
+cursor: pointer;
+}
+
+tr.highlighted:hover {
+background-color: #EEEEEE;
+}
+
+#mainContainer {
+text-align: center;
+display: table;
+vertical-align: middle;
+width: 85%;
+height: 75%;
+padding: 15px 0;
+background: white;
+margin: 0 auto;
+}
+#mainContainer * {vertical-align: middle;}
+#maincontainerVertCenter {display: table-cell;}
+
+/* IE comaptibility -> START */
+p {margin: 0;} /* IE's collapsing wierdness */
+
+#mainContainer {
+#width: 100%;
+#height: auto; /* IE7 */
+#_height: 90%; /* IE5/6 */
+}
+#mainContainer i {
+#display: inline-block;
+#min-height: 90%; /* IE7 */
+#_height: 100%; /* IE5/6 */
+}
+#mainContainerVertCenter, #centerPanel {
+#display: inline-block;
+#width: 100%;
+}
+#mainContainerVertCenter {
+/* this is part 2 and what makes inline-block work on block elements */
+#display: inline;
+}
+/* IE comaptibility -> END */
+
+.containerTop {
+margin: 0;
+top: 80px;
+left: 180;
+width: 800px;
+height: 70px;
+position:absolute;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+border: 1px solid #DDDDDD;
+background-color: #EEEEEE;
+}
+
+.containerExtend {
+margin: 0;
+top: 190px;
+bottom: 70px;
+left: 180;
+width: 800px;
+position: absolute;
+overflow: auto;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+background-color: #FFFFFF;
+border: 1px solid #DDDDDD;
+}
+
+.containerBottom {
+margin: 0;
+bottom: 10;
+left: 180;
+width: 800px;
+height: 50px;
+position:absolute;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 12px;
+color: #22316C;
+border: 1px solid #DDDDDD;
+}
+
+.infoPanel {
+width: 450px;
+height: 30px;
+background-color: white;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+border-bottom: 1px solid gray;
+}
+.infoTitle {
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+}
+.regularText {
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-size: 16px;
+color: #22316C;
+border: 0px solid gray;
+border-width: 0px 0px;
+}
+
+.formPanel{
+width: 450px;
+height: 300px;
+border: 1px solid gray;
+border-width: 0px 0px;
+}
+
+.fmtInputbox{
+width: 100%;
+border: 1px solid gray;
+}
+
+.fmtButton{
+width: 120px;
+cursor: default;
+margin-top: 10px;
+margin-right: 10px;
+border: 1px solid black;
+}
+.fmtButton:hover{
+cursor: pointer;
+background-color: #A9A9A9;
+}
+
+.fmtButtonLink{
+width: 60px;
+cursor: default;
+margin: 0;
+font-face: Verdana;
+font-size: 12px;
+color: #22316C;
+border: 0px solid black;
+background-color: white;
+}
+.fmtButtonLink:hover{
+cursor: pointer;
+text-decoration: underline;
+}
+
+.textField {
+width: 200px;
+background-color: white;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-size: 16px;
+color: #22316C;
+border: 0px solid gray;
+}
+
+.mainColumn {
+width: 620px;
+height: 320px;
+}
+
+.projPanel {
+width: 300px;
+height: 320px;
+position: relative;
+float: left;
+background-color: white;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+}
+
+.userPanel {
+width: 300px;
+height: 320px;
+position: relative;
+float: right;
+background-color: white;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+}
+
+.scroller{
+width: 300px;
+height: 120px;
+overflow: auto;
+border: 1px solid gray;
+padding: 0;
+margin: 0 0 10 0;
+}
+
+.propPanel {
+width: 300px;
+height: 235px;
+margin-top: 20px;
+float: left;
+background-color: white;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-weight: bold;
+font-size: 16px;
+color: #22316C;
+border: 0px solid #B0E2FF;
+}
+
+.buttonPanel {
+width: 610px;
+height: 20px;
+position: relative;
+background-color: white;
+}
+
+.dropMenu{
+border: 1px solid gray;
+margin-bottom: 10px;
+font-family: Verdana;
+font-weight: normal;
+font-size: 13px;
+color: #404040;
+width: 100%;
+}
+
+.fmtTable {
+width: 280px;
+float: left;
+text-align: left;
+font-family: Verdana;
+font-weight: normal;
+font-size: 13px;
+color: #404040;
+border-spacing: 0px;
+}
+
+.fmtTable.td {
+font-family: Arial, Helvetica, sans-serif;
+font-weight: normal;
+font-size: 12px;
+}
+
+.fmtPlainCell {
+height: 25px;
+margin:0;
+padding:0;
+cursor: pointer;
+border-right: 1px dotted #CCCCCC;
+border-bottom: 1px dotted #CCCCCC;
+}
+
+.fmtPlainCheckbox {
+height: 25px;
+width: 25px;
+margin:0;
+padding:0;
+border-left: 1px dotted #CCCCCC;
+border-right: 1px dotted #CCCCCC;
+border-bottom: 1px dotted #CCCCCC;
+}
+
+.fmtCheckbox {
+float:left;
+margin:1em;
+width: 150px;
+line-height:30px;
+font-family: Verdana;
+font-weight: normal;
+font-size: 13px;
+color: #404040;
+}
+
+.tableTitle {
+width: 49%;
+height: 20px;
+float: left;
+cursor: default;
+font-family: Verdana;
+font-weight: bold;
+font-size: 13px;
+color: #404040;
+text-align: center;
+background-color: #DCDCDC;
+border: 0px solid #CCCCCC;
+}
+
+td {
+height: 20px;
+text-indent: 5px;
+}
+
+td.checkBox {
+width: 25px;
+height: 25px;
+}
+
+.windowCover {
+position: absolute;
+left: 0;
+right: 0;
+top: 0;
+bottom: 0;
+filter: alpha(opacity=22);
+-moz-opacity: 0.22;
+background-color: #808080;
+}
+
+.messagePanel {
+position: relative;
+width: 500px;
+height: 100px;
+margin-top: 200px;
+margin-left: auto;
+margin-right: auto;
+text-align: right;
+color: #808080;
+font-size: small;
+background-color: #CCCCCC;
+border: 1px dotted red;
+}
+
+.messageArea {
+position: relative;
+width: 400px;
+height: 40px;
+margin-top: 25px;
+margin-bottom: 5;
+margin-left: auto;
+margin-right: auto;
+padding: 4px;
+line-height: 18px;
+font-face: Verdana, Arial, Helvetica, sans-serif;
+font-size: 13px;
+color: #404040;
+text-align: center;
+background-color: white;
+border: 1px solid #BDBDBD;
+}
+
+.popPanel {
+position: relative;
+width: 300px;
+height: 20px;
+margin-top: 3px;
+margin-left: auto;
+margin-right: auto;
+padding: 5px;
+font-family: Verdana;
+font-weight: bold;
+font-size: 13px;
+text-align: center;
+}
+
+.highlightOn {
+background-color: #BABABA;
+}
+
+.highlightOff {
+background-color: #BBBBBB;
+}
+
+.popLabel {
+position: relative;
+width: 130px;
+height: 20px;
+margin: 0 5px;
+padding: 0;
+font-family: Verdana, Arial, Helvetica, sans-serif;
+font-size: 11px;
+font-weight: normal;
+text-align: left;
+color: black;
+}
+
+.pathPopup {
+position: absolute;
+cursor: default;
+height: 15px;
+margin-left: auto;
+margin-right: auto;
+padding: 5px;
+color: #404040;
+font-size: 15px;
+text-align: center;
+background-color: #F5F5F5;
+border: 1px solid #DCDCDC;
+}

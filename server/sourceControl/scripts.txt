@@ -1,0 +1,1 @@
+cleartool find . -version 'SRC_XLATE=="yes"' -exec 'ls -g -G --time-style=long-iso $CLEARCASE_PN' | awk '{ printf "%-15s %s %-15s %s\n" , $3 , $4 , $5 , $6 ; }'
